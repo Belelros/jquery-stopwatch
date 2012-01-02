@@ -11,17 +11,47 @@
          return (number < 10 ? '0' : '') + number;
     }
     
-    function formatMilliseconds(millis) {
-        var x, seconds, minutes, hours;
-        x = millis / 1000;
-        seconds = Math.floor(x % 60);
-        x /= 60;
-        minutes = Math.floor(x % 60);
-        x /= 60;
-        hours = Math.floor(x % 24);
-        // x /= 24;
-        // days = Math.floor(x);
-        return [pad2(hours), pad2(minutes), pad2(seconds)].join(':');
+    function formatMilliseconds(millis, format) {
+        var x, seconds, minutes, hours, days, result;
+        switch (format){
+            case 'dd:hh:mm:ss':{
+                x = millis / 1000;
+                seconds = Math.floor(x % 60);
+                x /= 60;
+                minutes = Math.floor(x % 60);
+                x /= 60;
+                hours = Math.floor(x % 24);
+                x /= 24;
+                days = Math.floor(x);
+                result = [pad2(days), pad2(hours), pad2(minutes), pad2(seconds)].join(':');
+                break;
+            }
+            case 'hh:mm:ss': {
+                x = millis / 1000;
+                seconds = Math.floor(x % 60);
+                x /= 60;
+                minutes = Math.floor(x % 60);
+                x /= 60;
+                hours = Math.floor(x);
+                result =  [pad2(hours), pad2(minutes), pad2(seconds)].join(':');
+                break;
+            }
+            case 'mm:ss': {
+                x = millis / 1000;
+                seconds = Math.floor(x % 60);
+                x /= 60;
+                minutes = Math.floor(x);
+                result =  [pad2(minutes), pad2(seconds)].join(':');
+                break;
+            }
+            case 'ss': {
+                x = millis / 1000;
+                seconds = Math.floor(x);
+                result =  pad2(seconds);
+                break;
+            }
+        }
+        return result;
     }
     
     var methods = {
@@ -30,6 +60,7 @@
             var settings = {
                 updateInterval: 1000, 
                 startTime: 0, 
+                timeFormat: 'hh:mm:ss',
                 formatter: formatMilliseconds
             };
             
@@ -45,6 +76,7 @@
                     data = settings;
                     data.target = $this;
                     data.elapsed = settings.startTime;
+                    data.timeFormat = settings.timeFormat;
                     // create counter
                     data.incrementer = incrementer(data.startTime, data.updateInterval);
                     data.tick_function = function() {
@@ -79,7 +111,7 @@
                 $this.data('stopwatch', data);
             });
         },
-        
+
         destroy: function() {
             return this.each(function(){
                 var $this = $(this),
@@ -91,9 +123,15 @@
         render: function() {
             var $this = $(this),
                 data = $this.data('stopwatch');
-            $this.html(data.formatter(data.elapsed));
+            $this.html(data.formatter(data.elapsed,data.timeFormat));
         },
-        
+
+        getTime: function() {
+            var $this = $(this),
+                data = $this.data('stopwatch');
+            return (data.elapsed);
+        },
+
         toggle: function() {
             return this.each(function() {
                 var $this = $(this);
